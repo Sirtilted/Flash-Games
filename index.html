@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flash Games Archive</title>
+  <link rel="stylesheet" href="site/style.css">
+  <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
+  <script src="site/games.js" defer></script>
+  <script>
+    function createGameGrid() {
+      const grid = document.getElementById('game-grid');
+      const filter = document.getElementById('search-box').value.toLowerCase();
+      grid.innerHTML = '';
+      const visibleGames = games.filter(game => game.title.toLowerCase().includes(filter));
+      if (!visibleGames.length) {
+        grid.innerHTML = '<p class="empty">No games matched your search.</p>';
+        return;
+      }
+      visibleGames.forEach(game => {
+        const card = document.createElement('button');
+        card.className = 'game-card';
+        card.textContent = game.title;
+        card.type = 'button';
+        card.addEventListener('click', () => {
+          window.location.href = `site/player.html?game=${encodeURIComponent(game.file)}`;
+        });
+        grid.appendChild(card);
+      });
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+      createGameGrid();
+      document.getElementById('search-box').addEventListener('input', createGameGrid);
+    });
+  </script>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>Flash Games Archive</h1>
+        <p>Click a game below to launch it with Ruffle.</p>
+      </div>
+    </header>
+    <section class="search-bar">
+      <input id="search-box" type="search" placeholder="Search games..." aria-label="Search games">
+      <span class="count"></span>
+    </section>
+    <section id="game-grid" class="grid"></section>
+    <footer>
+      <p>Built from the Flash Archive source. SWF files are located in `site/swfs/`.</p>
+    </footer>
+  </main>
+</body>
+</html>
