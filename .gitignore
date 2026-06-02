@@ -1,0 +1,13 @@
+# Common ignores
+.DS_Store
+Thumbs.db
+*.log
+
+# Python local server cache
+__pycache__/
+
+# Node modules (not used by this project)
+node_modules/
+
+# Editor metadata
+.vscode/

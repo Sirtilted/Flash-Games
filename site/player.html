@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Play Flash Game</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
+  <script src="games.js"></script>
+  <script>
+    function getQueryParam(name) {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(name);
+    }
+    function loadGame() {
+      const gameFile = getQueryParam('game');
+      const titleEl = document.getElementById('game-title');
+      const container = document.getElementById('player-container');
+      if (!gameFile) {
+        titleEl.textContent = 'No game selected';
+        container.innerHTML = '<p class="empty">Choose a game from the home page.</p>';
+        return;
+      }
+      const decodedFile = decodeURIComponent(gameFile);
+      const game = games.find(g => g.file === decodedFile);
+      if (!game) {
+        titleEl.textContent = 'Game not found';
+        container.innerHTML = '<p class="empty">The selected game is unavailable.</p>';
+        return;
+      }
+      titleEl.textContent = game.title;
+      const object = document.createElement('object');
+      object.type = 'application/x-shockwave-flash';
+      object.data = 'swfs/' + encodeURIComponent(game.file);
+      object.width = '100%';
+      object.height = '650';
+      object.innerHTML = '<p>Your browser does not support Flash. Use a modern browser with Ruffle support.</p>';
+      container.innerHTML = '';
+      container.appendChild(object);
+    }
+    document.addEventListener('DOMContentLoaded', loadGame);
+  </script>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1 id="game-title">Loading game...</h1>
+      </div>
+      <nav>
+        <button type="button" onclick="window.location.href='index.html'">Back to library</button>
+      </nav>
+    </header>
+    <section id="player-container" class="player"></section>
+    <footer>
+      <p>If the game does not load, try refreshing the page or using a local web server to avoid browser file restrictions.</p>
+    </footer>
+  </main>
+</body>
+</html>
