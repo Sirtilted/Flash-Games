@@ -1,0 +1,56 @@
+name: Update Games List
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'html/*.html'
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate site/games.json
+        run: |
+          python3 - <<'EOF'
+          import os, json, re
+
+          SKIP = {'index.html', 'info.html', 'Castle Hero.html'}
+          games = []
+          seen = set()
+
+          for f in sorted(os.listdir('html')):
+              if not f.endswith('.html') or f in SKIP:
+                  continue
+              try:
+                  with open(f'html/{f}', encoding='utf-8', errors='ignore') as fh:
+                      content = fh.read()
+              except Exception:
+                  continue
+              m = re.search(r'<title>(.*?)</title>', content, re.IGNORECASE)
+              title = m.group(1).strip() if m else ''
+              if not title or title == 'Flash Games Archive':
+                  continue
+              key = title.lower()
+              if key in seen:
+                  continue
+              seen.add(key)
+              games.append({'title': title, 'page': f'html/{f}'})
+
+          games.sort(key=lambda x: x['title'].lower())
+          with open('site/games.json', 'w') as fh:
+              json.dump(games, fh, indent=2)
+          print(f'Generated {len(games)} games')
+          EOF
+
+      - name: Commit updated games.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add site/games.json
+          git diff --staged --quiet || git commit -m "chore: auto-update games list [skip ci]"
+          git push

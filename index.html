@@ -5,31 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Flash Games Archive</title>
   <link rel="stylesheet" href="site/style.css">
-  <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
-  <script src="site/games.js" defer></script>
   <script>
+    let allGames = [];
+
     function createGameGrid() {
       const grid = document.getElementById('game-grid');
+      const countEl = document.querySelector('.count');
       const filter = document.getElementById('search-box').value.toLowerCase();
       grid.innerHTML = '';
-      const visibleGames = games.filter(game => game.title.toLowerCase().includes(filter));
-      if (!visibleGames.length) {
+      const visible = allGames.filter(g => g.title.toLowerCase().includes(filter));
+      countEl.textContent = `${visible.length} game${visible.length !== 1 ? 's' : ''}`;
+      if (!visible.length) {
         grid.innerHTML = '<p class="empty">No games matched your search.</p>';
         return;
       }
-      visibleGames.forEach(game => {
-        const card = document.createElement('button');
+      visible.forEach(game => {
+        const card = document.createElement('a');
         card.className = 'game-card';
         card.textContent = game.title;
-        card.type = 'button';
-        card.addEventListener('click', () => {
-          window.location.href = `site/player.html?game=${encodeURIComponent(game.file)}`;
-        });
+        card.href = game.page;
         grid.appendChild(card);
       });
     }
+
     document.addEventListener('DOMContentLoaded', () => {
-      createGameGrid();
+      fetch('site/games.json')
+        .then(r => r.json())
+        .then(data => {
+          allGames = data;
+          createGameGrid();
+        })
+        .catch(() => {
+          document.getElementById('game-grid').innerHTML =
+            '<p class="empty">Failed to load game list.</p>';
+        });
       document.getElementById('search-box').addEventListener('input', createGameGrid);
     });
   </script>
@@ -39,7 +48,7 @@
     <header>
       <div>
         <h1>Flash Games Archive</h1>
-        <p>Click a game below to launch it with Ruffle.</p>
+        <p>Click a game below to play it with Ruffle.</p>
       </div>
     </header>
     <section class="search-bar">
@@ -48,7 +57,7 @@
     </section>
     <section id="game-grid" class="grid"></section>
     <footer>
-      <p>Built from the Flash Archive source. SWF files are located in `site/swfs/`.</p>
+      <p>SWF files served via <a href="https://www.jsdelivr.com/">jsDelivr</a> CDN from this repository.</p>
     </footer>
   </main>
 </body>
